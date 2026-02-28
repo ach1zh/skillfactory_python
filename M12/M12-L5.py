@@ -7,11 +7,19 @@ import redis
 
 # Basic connection param.
 r = redis.Redis(
+<<<<<<< HEAD
     host='***',
     port=12509,
     decode_responses=True,
     username="default",
     password="***",
+=======
+    host='redis-12509.c328.europe-west3-1.gce.cloud.redislabs.com',
+    port=12509,
+    decode_responses=True,
+    username="default",
+    password="DjDOmGpgXH2gPCogmawsZjwfW3nUw1hX",
+>>>>>>> 0a50c1beaa265cd85c9fca5b4f4b6e735aea4453
 )
 
 # Test connection
