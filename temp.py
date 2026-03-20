@@ -1,50 +1,67 @@
-class TaskList:
-    def __init__(self):
-        self.__task_list = []
+# test_patch_example.py
+from unittest.mock import patch, Mock
 
-    def __is_task_in_list(self, task):
-        for t in self.__task_list:
-            if t['name'] == task:
-                return True
-        return False
+# --- Тестируемый код (обычно в другом файле) ---
+import requests
+def get_external_data(item_id):
+    # Эта функция делает реальный сетевой запрос
+    print(f"\nВызов requests.get для {item_id}...") # Оставим print для демонстрации, что он НЕ выполнится в тесте
+    response = requests.get(f"https://api.example.com/items/{item_id}")
+    if response.status_code == 200:
+        return response.json()
+    return None
+# --- Конец тестируемого кода ---
 
-    def add_task(self, task):
-        if not self.__is_task_in_list(task):
-            self.__task_list.append({'name': task, 'done': False})
-            print(f'Задача "{task}" добавлена в список')
-        else:
-            print(f'Задача "{task}" уже есть в списке')
+#### Использование patch как декоратора
 
-    def remove_task(self, task_name):
-        for task in self.__task_list:
-            if task['name'] == task_name:
-                self.__task_list.remove(task)
-                print(f'Задача "{task_name}" удалена из списка')
-                return
-        print(f'Задачи "{task_name}" нет в списке')
+@patch('__main__.requests.get') # Патчим requests.get в текущем модуле, где он используется
+def test_get_external_data_with_decorator(mock_requests_get):
+    # Настраиваем мок, который будет передан в mock_requests_get
+    print("\nЗапуск test_get_external_data_with_decorator")
+    mock_response = Mock()
+    mock_response.status_code = 200
+    mock_response.json.return_value = {"id": 1, "name": "Test Item"}
+    mock_requests_get.return_value = mock_response
 
-# Создаём контейнер задач
-ts = TaskList()
-# Добавляем задачи в контейнер
-ts.add_task('Create get_task_list() method')
+    data = get_external_data(1)
 
-# Пытаемся добавить две одинаковые задач
-ts.add_task('Show students how __task_list attr looks like')
-ts.add_task('Show students how __task_list attr looks like')
+    assert data == {"id": 1, "name": "Test Item"}
+    mock_requests_get.assert_called_once_with("https://api.example.com/items/1")
 
-# Добавляем задачу и удаляем ее
-ts.add_task('Show students how work remove_task() method')
-ts.remove_task('Show students how work remove_task() method')
+#### Использование patch как контекстного менеджера
 
-# Смотрим приватный список задач
-print(ts._TaskList__task_list)
+def test_get_external_data_with_context_manager():
+    print("\nЗапуск test_get_external_data_with_context_manager")
+    with patch('__main__.requests.get') as mock_requests_get_cm:
+        mock_response = Mock()
+        mock_response.status_code = 404
+        mock_requests_get_cm.return_value = mock_response
 
-# Задача "Create get_task_list() method" добавлена в список
-# Задача "Show students how __task_list attr looks like" добавлена в список
+        data = get_external_data(2)
 
-# Задача "Show students how __task_list attr looks like" уже есть в списке
+        assert data is None
+        mock_requests_get_cm.assert_called_once_with("https://api.example.com/items/2")
 
-# Задача "Show students how work remove_task() method" добавлена в список
-# Задача "Show students how work remove_task() method" удалена из списка
+#### Патчинг методов объекта с patch.object
 
-# [{'name': 'Create get_task_list method', 'done': False}, {'name': 'Show students how __task_list attr looks like', 'done': False}]
+# --- Тестируемый код ---
+class ReportGenerator:
+    def _get_user_stats(self, user_id):
+        # Имитация сложного/медленного вызова
+        raise NotImplementedError("Не вызывайте реальный метод в тесте!")
+
+    def generate_report(self, user_id):
+        stats = self._get_user_stats(user_id)
+        return f"User {user_id}: Logins - {stats['logins']}, Spent - {stats['spent']}"
+# --- Конец тестируемого кода ---
+
+@patch.object(ReportGenerator, '_get_user_stats') # Патчим метод конкретного класса
+def test_generate_report_patches_object_method(mock_get_stats):
+    print("\nЗапуск test_generate_report_patches_object_method")
+    mock_get_stats.return_value = {"logins": 10, "spent": 50} # Упрощенные данные для теста
+
+    generator = ReportGenerator()
+    report = generator.generate_report(user_id=123)
+
+    assert report == "User 123: Logins - 10, Spent - 50"
+    mock_get_stats.assert_called_once_with(123)

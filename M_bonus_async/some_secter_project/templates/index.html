@@ -1,0 +1,11 @@
+{% set title = "Main" %}
+<h1>Your tasks</h1>
+{% if tasks %}
+   <ul>
+   {% for task in tasks %}
+       <li>{{ task.task_text }}</li>
+   {% endfor %}
+   </ul>
+{% else %}
+   <p>No task are available.</p>
+{% endif %}
