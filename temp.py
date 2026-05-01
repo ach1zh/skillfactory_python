@@ -21,3 +21,8 @@ countries_df = pd.DataFrame(
     index = ['UK', 'CA', 'US', 'RU', 'UA', 'BY', 'KZ']
 )
 print(countries_df)
+
+
+
+str = "asd"
+print(str)
