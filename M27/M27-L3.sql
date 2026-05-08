@@ -1,0 +1,5 @@
+--M27-L3
+--SELECT COUNT(*) AS total_rows FROM public.vacancies;
+--SELECT COUNT(*) AS total_rows FROM public.employers;
+--SELECT COUNT(*) AS total_rows FROM public.areas;
+--SELECT COUNT(*) AS total_rows FROM public.industries;
