@@ -1,25 +1,21 @@
+"""
+        #print(f"Месяц: {month}")
+        #print(f"Остаток долга: {credit_amount}")
+        #print(f"Платеж: {monthly_payment}")
+        #print(f"Процентная часть: {interest_percentage}")
+        #print(f"Долговая часть: {debt_portion}")
+        #if credit_amount < monthly_payment:
+        #    print(f"Остаток долга на конец периода: 0")    
+        #else:
+        #    print(f"Остаток долга на конец периода: {debt_balance}")
+        #    
+        #print('--------------------')
+"""
 
-import requests
-from bs4 import BeautifulSoup
-import pandas as pd
-import psycopg2
 
-#v1 - работает на рабочем ПК, не работает на домашнем. Вероятно проблемы с версиями.
-# Получаем содержимое страницы
-#url = 'https://ru.wikipedia.org/wiki/Города-миллионеры_России'
-#response = requests.get(url, headers={'User-Agent': 'Mozilla/5.0'})
-#response.raise_for_status()
 
-# Парсим HTML
-#soup = BeautifulSoup(response.content, 'html.parser')
+    - процентная часть,
+    - ,
+    - остаток долга на конец периода;
 
-# Находим нужную таблицу по ID
-#table = soup.find(id="mwFw")
-#if table is None:
-#    raise ValueError("Таблица с id='mwFw' не найдена на странице")
-
-# Конвертируем в строку и читаем через read_html
-#table_html = str(table)
-#table_df = pd.read_html(table_html)[0]
-
-#print(table_df.info())
+'Месяц','Дата платежа','Остаток долга','Ежемесячный платеж','Процентная часть','Долговая часть','Остаток долга на конец периода'
