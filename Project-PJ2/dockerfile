@@ -1,0 +1,12 @@
+# Dockerfile
+FROM apache/airflow:2.9.1
+
+# Устанавливаем дополнительные Python-пакеты
+RUN pip install --no-cache-dir \    
+    -i https://pypi.tuna.tsinghua.edu.cn/simple/ \
+    streamlit \
+    requests \
+    pandas \
+    openmeteo-requests \
+    geopy \
+    polars

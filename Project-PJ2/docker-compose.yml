@@ -1,0 +1,76 @@
+# version: '3.8' # Убрана устаревшая версия
+services:
+  airflow-init:
+    #image: apache/airflow:2.9.1
+    build: .
+    container_name: airflow_init
+    environment:
+      - AIRFLOW__CORE__EXECUTOR=SequentialExecutor # Изменено с LocalExecutor
+      # Убедимся, что используется SQLite по умолчанию
+      - AIRFLOW__DATABASE__SQL_ALCHEMY_CONN=sqlite:////opt/airflow/airflow.db
+      - AIRFLOW__CORE__FERNET_KEY=1iyOhDNi5XQYrJYkbqMHX9K-M20d1X0qJ-ZyK4dh50E=
+      - AIRFLOW__CORE__LOAD_EXAMPLES=False
+    volumes:
+      # Отдельный volume для внутренних данных Airflow
+      - airflow_data:/opt/airflow
+      # Монтируем ТОЛЬКО папку DAG
+      - ./dags:/opt/airflow/dags
+    command: >
+      bash -c "
+        airflow db init &&
+        airflow users create --username admin --firstname Admin --lastname User --role Admin --email admin@example.com --password admin &&
+        echo 'Initialization complete.'
+      "
+
+  airflow-webserver:
+    #image: apache/airflow:2.9.1
+    build: .
+    container_name: airflow_webserver
+    depends_on:
+      airflow-init:
+        condition: service_completed_successfully
+    environment:
+      - AIRFLOW__CORE__EXECUTOR=SequentialExecutor # Изменено с LocalExecutor
+      - AIRFLOW__DATABASE__SQL_ALCHEMY_CONN=sqlite:////opt/airflow/airflow.db
+      - AIRFLOW__CORE__FERNET_KEY=1iyOhDNi5XQYrJYkbqMHX9K-M20d1X0qJ-ZyK4dh50E=
+      - AIRFLOW__CORE__LOAD_EXAMPLES=False
+    volumes:
+      # Используем тот же volume для доступа к airflow.db
+      - airflow_data:/opt/airflow
+      - ./dags:/opt/airflow/dags
+      # Монтируем проект, если нужно
+      - .:/opt/airflow/project
+    ports:
+      - "8080:8080"
+    healthcheck:
+      test: ["CMD", "curl", "--fail", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 30s
+    restart: always
+    command: airflow webserver
+
+  airflow-scheduler:    
+    #image: apache/airflow:2.9.1
+    build: .
+    container_name: airflow_scheduler
+    depends_on:
+      airflow-init:
+        condition: service_completed_successfully
+    environment:
+      - AIRFLOW__CORE__EXECUTOR=SequentialExecutor # Изменено с LocalExecutor
+      - AIRFLOW__DATABASE__SQL_ALCHEMY_CONN=sqlite:////opt/airflow/airflow.db
+      - AIRFLOW__CORE__FERNET_KEY=1iyOhDNi5XQYrJYkbqMHX9K-M20d1X0qJ-ZyK4dh50E=
+      - AIRFLOW__CORE__LOAD_EXAMPLES=False
+    volumes:
+      # Используем тот же volume для доступа к airflow.db
+      - airflow_data:/opt/airflow
+      - ./dags:/opt/airflow/dags
+      # Монтируем проект, если нужно
+      - .:/opt/airflow/project
+    command: airflow scheduler
+
+volumes:
+  airflow_data: # Исправлено имя volume
+    # Это создаст именованный volume, управляемый Docker
